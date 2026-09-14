@@ -1,5 +1,5 @@
 ---
-title: "An Analysis of Transportation Systems Across the World: NYC"
+title: "An Analysis of Transportation Systems Across the World"
 author: "D'Angelo Francis"
 format: html
 embed-resources: true
@@ -10,11 +10,10 @@ toc: true
 editor_options: 
   chunk_output_type: console
 lightbox: true
+warning: false
 ---
 
 ```{r install libraries}
-
-#| warning: false
 
 library(tidyverse)
 library(here)
@@ -29,6 +28,50 @@ library(dotenv)
 
 ```
 
-# Project 1: Analyzing Transportation Site Data from the Office of Pupil Transportation  
+# About
+
+
+# Project 1: Analyzing NYC School Bus Delays 
+
+## Summary
+
+## Methodology
 
 *Source*: <https://dev.socrata.com/foundry/data.cityofnewyork.us/hg3c-2jsy>(Transportation Sites, hg3c-2jsy) 
+
+::::{.callout-tip title="The Policy Question"}
+
+What boroughs are most impacted by school bus issues, and can a causal pattern be found among the data?
+
+::::
+
+# Project 2: Methods to Stop Fare Evasion
+
+## Summary
+
+## Methodology
+
+*Source*: <https://dev.socrata.com/foundry/data.cityofnewyork.us/hg3c-2jsy>(Transportation Sites, hg3c-2jsy) 
+
+::::{.callout-tip title="The Policy Question"}
+
+What boroughs are most impacted by fare evasion, and can we build a predictive profile of who is most likely to evade fares?
+
+::::
+
+# Project 3: Rail Usage  
+
+## Summary
+
+## Methodology
+
+*Source*: [Transportation Sites, hg3c-2jsy](https://dev.socrata.com/foundry/data.cityofnewyork.us/hg3c-2jsy)
+
+::::{.callout-tip title="The Policy Question"}
+
+What rail lines are most heavily trafficked?
+
+::::
+
+
+
