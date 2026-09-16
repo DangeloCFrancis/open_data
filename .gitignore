@@ -49,3 +49,7 @@ po/*~
 rsconnect/
 
 .env
+
+data/*
+
+.DS_Store

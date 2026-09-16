@@ -19,15 +19,6 @@ load_dot_env()
 
 my_api_key <- Sys.getenv("nyc_open_data_api_key")
 
-get_data_csv <- function(access_url){
-  
-  httr2::request(access_url) |>
-    httr2::req_perform() |>
-    httr2::resp_body_string() |> # ideal for.csv data
-    read_csv() |> # if data is .csv
-    janitor::clean_names()
-}
-
 
 # nyc_opt_data_stops <- 
 #   get_data_csv("http://data.cityofnewyork.us/api/v3/views/hg3c-2jsy/export.csv?accessType=DOWNLOAD") |>
@@ -126,7 +117,7 @@ nyc_opt_data_delays |>
 
 nyc_opt_data_delays |>
   group_by(boro, reason) |>
-  summarize(,
+  summarize(
             num_reason_type = n()) |>
   ungroup() |>
   slice_max(order_by = num_reason_type, n = 5) |>
