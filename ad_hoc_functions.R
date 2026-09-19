@@ -1,10 +1,20 @@
 # Functions 
 
 
-
 # Web API - CSV -----------------------------------------------------------
 
 
+
+
+#' Get .csv data from a Simple API Interface Link
+#'
+#' @param access_url 
+#' @param desired_filename 
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 get_data_csv <- function(access_url,desired_filename){
   
   api_data <- 
@@ -31,6 +41,15 @@ get_data_csv <- function(access_url,desired_filename){
 # Web API - JSON ----------------------------------------------------------
 
 
+#' Get .json data and convert to .csv from a Simple API Interface Link
+#'
+#' @param access_url 
+#' @param desired_filename 
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 get_data_json <- function(access_url,desired_filename){
   
  api_data <- 

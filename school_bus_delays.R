@@ -1,17 +1,5 @@
 
-library(tidyverse)
-library(here)
-library(tidymodels)
-library(ggthemes)
-library(ggpubr)
-library(bookdown)
-library(codebookr)
-library(httr2)
-library(jsonlite)
-library(dotenv)
-library(sf)
-
-
+pacman::p_load(tidyverse, here, tidymodels, ggpubr, bookdown, codebookr, httr2, jsonlite, dotenv)
 
 # Build API Function to Recycle for NYC Open Data site --------------------
 
@@ -25,7 +13,7 @@ my_api_key <- Sys.getenv("nyc_open_data_api_key")
 #   rename(boro = city) # rename column to reflect name of boro is observation
 
 nyc_opt_data_delays <- 
-  get_data_csv("https://data.cityofnewyork.us/api/v3/views/ez4e-fazm/query.csv") |>
+  get_data_csv("https://data.cityofnewyork.us/api/v3/views/ez4e-fazm/query.csv","bus_delays") |>
   select(!c(id, version, created_at, updated_at, created_on, informed_on, 
             incident_number,last_updated_on))
 

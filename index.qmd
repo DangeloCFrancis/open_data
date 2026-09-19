@@ -15,16 +15,8 @@ warning: false
 
 ```{r install libraries}
 
-library(tidyverse)
-library(here)
-library(tidymodels)
-library(ggthemes)
-library(ggpubr)
-library(bookdown)
-library(codebookr)
-library(httr2)
-library(jsonlite)
-library(dotenv)
+pacman::p_load(tidyverse, here, tidymodels, ggpubr, bookdown, codebookr, httr2, jsonlite, dotenv)
+
 
 ```
 
