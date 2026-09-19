@@ -73,5 +73,10 @@ What rail lines are most heavily trafficked?
 
 ::::
 
+```{python}
 
+import numpy as np
+
+
+```
 
