@@ -4,8 +4,6 @@
 # Web API - CSV -----------------------------------------------------------
 
 
-
-
 #' Get .csv data from a Simple API Interface Link
 #'
 #' @param access_url 
@@ -15,6 +13,7 @@
 #' @export
 #'
 #' @examples
+
 get_data_csv <- function(access_url,desired_filename){
   
   api_data <- 

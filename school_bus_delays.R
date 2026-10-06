@@ -1,5 +1,5 @@
 
-pacman::p_load(tidyverse, here, tidymodels, ggpubr, bookdown, codebookr, httr2, jsonlite, dotenv)
+pacman::p_load(tidyverse, here, tidymodels, ggpubr, bookdown, codebookr, httr2, jsonlite, dotenv, gtsummary, patchwork, cowplot)
 
 # Build API Function to Recycle for NYC Open Data site --------------------
 
@@ -7,21 +7,13 @@ load_dot_env()
 
 my_api_key <- Sys.getenv("nyc_open_data_api_key")
 
-
-# nyc_opt_data_stops <- 
-#   get_data_csv("http://data.cityofnewyork.us/api/v3/views/hg3c-2jsy/export.csv?accessType=DOWNLOAD") |>
-#   rename(boro = city) # rename column to reflect name of boro is observation
+source("ad_hoc_functions.R")
 
 nyc_opt_data_delays <- 
   get_data_csv("https://data.cityofnewyork.us/api/v3/views/ez4e-fazm/query.csv","bus_delays") |>
   select(!c(id, version, created_at, updated_at, created_on, informed_on, 
             incident_number,last_updated_on))
 
-# nyc_opt_data_delays <- 
-#   nyc_opt_data_delays |>
-#   select(!c(id, version, created_at, updated_at)) # quick method to remove cols after download
-
-# head(nyc_opt_data) # no longer interested in EDA for this data - looking at school bus delays instead
 
 head(nyc_opt_data_delays)
 
@@ -53,12 +45,15 @@ school_years_of_interest <- c("2015-2016", "2016-2017", "2017-2018","2018-2019",
 nyc_opt_data_delays$school_year <- forcats::fct(nyc_opt_data_delays$school_year)
 
 # reorder since order makes sense
+
 nyc_opt_data_delays$school_year <- forcats::fct_relevel(nyc_opt_data_delays$school_year, school_years_of_interest)
 
 # filter for scope of interest: The Five Boros from 2015-2026
+
 nyc_opt_data_delays <- 
   nyc_opt_data_delays |>
-  filter(school_year %in% school_years_of_interest, boro %in% c("Brooklyn","Bronx","Manhattan","Queens","Staten Island"))
+  filter(school_year %in% school_years_of_interest, 
+         boro %in% c("Brooklyn","Bronx","Manhattan","Queens","Staten Island"))
   
 # exploratory analysis - trend over time - as expected, 2020-2021 drop due to pandemic. 
 # but, why did 2018-2019 have so many breakdowns? Why was there an upward trend pre-pandemic, 
@@ -69,7 +64,7 @@ nyc_opt_data_delays |>
   summarize(num_delays = n()) |># increase in the number of instance - or stricter reporting?
   ggplot(aes(x = school_year, y = num_delays)) + 
   geom_col() +
-  ggthemes::theme_clean() +
+  theme_classic(base_size = 12) +
   scale_y_continuous(labels = scales::label_comma()) +
   labs(
     title = "Number of Delays Across School Years: 2015-2026",
@@ -77,9 +72,18 @@ nyc_opt_data_delays |>
     y = "Number of Delays",
     caption = "Source: Office of Pupil Transportation, City of New York"
   ) +
-  theme(axis.text.x = element_text(angle = 45, vjust = .5))
+  theme(
+    text = element_text(family = "Arial"),
+    plot.title = element_text(size = 14, face = 
+                                "bold"),
+    axis.title = element_text(size = 11),
+    axis.text = element_text(9),
+    axis.text.x = element_text(angle = 45, vjust = .5))
 
-  # exploratory analysis - delay by type. Clearly, heavy traffic is the biggest reason by wide margin
+
+# Exploratory Analysis #1 - Delay by Type ---------------------------------
+
+# Clearly, heavy traffic is the biggest reason by wide margin
 
 nyc_opt_data_delays |>
   group_by(reason) |>
@@ -103,6 +107,10 @@ nyc_opt_data_delays |>
 # Question - are these delays concentrated in one borough of NYC? Seems like Bronx and Manhattan lead compared to Queens. 
 # Though, it's interesting that Brooklyn is the only boro with "other" as a leading category.
 
+
+# Exploratory Analysis #2 - Delays by Boroughs ----------------------------
+
+
 nyc_opt_data_delays |>
   group_by(boro, reason) |>
   summarize(
@@ -121,3 +129,24 @@ nyc_opt_data_delays |>
     fill = "Boroughs") +
   theme(axis.text.x = element_text(angle = 45, vjust = .5)) +
   geom_text(aes(label = comma(num_reason_type), vjust = -.5), position = position_dodge(width = .95), size = 2.4)
+
+
+
+# Exploratory Analysis #3 - Exploring 2018-2019 Delays --------------------
+
+nyc_opt_data_delays_1819 <- 
+  nyc_opt_data_delays |>
+  filter(school_year == "2018-2019") |> # 108,220 instances
+  mutate(month = lubridate::month(occurred_on, label = T),
+         weekday = lubridate::wday(occurred_on, label = T)
+         )
+
+nyc_opt_data_delays_1819 |>
+  group_by(month, weekday) |>
+  summarize(num_delay = n()) |>
+  ggplot() +
+  geom_col(aes(x = month, y = num_delay)) +
+  theme_classic()
+
+
+
