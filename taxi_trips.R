@@ -1,6 +1,6 @@
 # Taxi Trips
 
-pacman::p_load(tidyverse, httr2, duckdb, arrow, sf)
+pacman::p_load(tidyverse, httr2, duckdb, arrow, sf, leaflet, tmap)
 
 # .PARQUET source link: https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
 
@@ -16,6 +16,7 @@ pacman::p_load(tidyverse, httr2, duckdb, arrow, sf)
 # 
 # }
 
+# prep yellow cab data
 
 yellow_taxi_trips_aug26 <- arrow::read_parquet("data/taxi_data/yellow_tripdata_2026-08.parquet")
 
@@ -23,6 +24,26 @@ head(yellow_taxi_trips_aug26)
 
 summary(yellow_taxi_trips_aug26)
 
+
+
+# 0. Green Taxi and HVFH Data ---------------------------------------------
+
+
+# # prep green cab data
+# 
+# green_taxi_trips_aug26 <- 
+#   arrow::read_parquet("data/taxi_data/green_tripdata_2026-08.parquet") |>
+#   select(!ehail_fee) # all NA
+#  
+# head(green_taxi_trips_aug26)
+# 
+# summary(green_taxi_trips_aug26)
+# 
+# # prep hvfhv cab data
+# 
+# hvfhv_trips_aug26 <- arrow::read_parquet("data/taxi_data/fhvhv_tripdata_2026-08.parquet") # High Volume For-Hire Vehicle, mispelled wrong on website
+# 
+# head(hvfhv_trips_aug26) # 20+ MILLION OBS
 
 # Data Dictionary ---------------------------------------------------------
 
@@ -170,6 +191,106 @@ yellow_taxi_trips_aug26 |>
 ggsave(filename = "visualizations/figure_3.pdf", dpi = 600, height = 6, width = 12) # PPTX standard
 
 
-# 4. Geographic Breakdown -------------------------------------------------
+# 4. Geographic Breakdown - Location Pickup -------------------------------------------------
+
+
+# crsuggest::suggest_crs(filter(taxi_zones, borough != "EWR"))
+
+taxi_zones <-
+  read_sf("data/taxi_data/taxi_zones/") |>  # taxi_zone shape data
+  st_as_sf() |>
+  st_transform(crs = 6524) # 6524 if including EWR, 6539 otherwise
+
+yellow_cab_pickups <-
+  yellow_taxi_trips_aug26 |>
+  left_join(taxi_zones, join_by(PULocationID == LocationID)) |>
+  st_as_sf() |>
+  filter(VendorID != "6") |>
+  mutate(Vendor_name = case_when(
+    VendorID == 1 ~ "Creative Mobile Technologies",
+    VendorID == 2 ~ "Curb Mobility, LLC", 
+    VendorID == 7 ~ "Helix Pay",
+  ),
+  Vendor_name = fct(Vendor_name))
+
+tictoc::tic()
+
+pickups_aug2026 <-
+  yellow_cab_pickups |>
+  group_by(VendorID, Vendor_name, PULocationID, zone, geometry) |>
+  summarize(num_pickups = n(),
+            day = lubridate::day(tpep_pickup_datetime),
+            time_of_day = lubridate::hour(tpep_pickup_datetime),
+            .groups = "drop") |>
+  tm_shape() +
+  tm_polygons(fill = "num_pickups",
+              fill.legend = tm_legend(title = "Number of Passenger Pickups",reverse = TRUE)) +
+  tm_facets(by = "Vendor_name")
+# tm_animate_fast(frames = "day")
+
+tictoc::toc()
+
+tmap_save(pickups_aug2026, filename = "visualizations/figure_4.pdf", dpi = 600, height = 6, width = 12)
+
+
+# Old Code for sf() and patchwork() maps ----------------------------------
+
+# yellow_cab_pickups |>
+#   group_by(PULocationID, zone) |>
+#   summarize(num_pickups = n(), .groups = "drop") |>
+#   ggplot() +
+#   geom_sf(aes(fill = num_pickups)) +
+#   scale_fill_viridis_c(
+#     name = "Number of Passenger Pickups",
+#     values = scales::label_comma()
+#   ) +
+#   ggthemes::theme_map()
+# 
+# brooklyn_taxi_zones_plot_pu <-
+#   taxi_zones |>
+#   filter(borough == "Brooklyn") |>
+#   ggplot() +
+#   geom_sf() +
+#   ggthemes::theme_map() +
+#   facet_wrap(~borough)
+# 
+# bronx_taxi_zones_plot_pu <-
+#   taxi_zones |>
+#   filter(borough == "Bronx") |>
+#   ggplot() +
+#   geom_sf() +
+#   ggthemes::theme_map() +
+#   facet_wrap(~borough)
+# 
+# manhattan_taxi_zones_plot_pu <-
+#   taxi_zones |>
+#   filter(borough == "Manhattan") |>
+#   ggplot() +
+#   geom_sf() +
+#   ggthemes::theme_map() +
+#   facet_wrap(~borough)
+# 
+# queens_taxi_zones_plot_pu <-
+#   taxi_zones |>
+#   filter(borough == "Queens") |>
+#   ggplot() +
+#   geom_sf() +
+#   ggthemes::theme_map() +
+#   facet_wrap(~borough)
+# 
+# staten_island_taxi_zones_plot_pu <-
+#   taxi_zones |>
+#   filter(borough == "Staten Island") |>
+#   ggplot() +
+#   geom_sf() +
+#   ggthemes::theme_map() +
+#   facet_wrap(~borough)
+# 
+# library(patchwork)
+# 
+# wrap_plots(brooklyn_taxi_zones_plot, bronx_taxi_zones_plot, manhattan_taxi_zones_plot, queens_taxi_zones_plot, staten_island_taxi_zones_plot) +
+#   plot_annotation(
+#     title = "NYC Taxi Zones"
+#   )
 
 
