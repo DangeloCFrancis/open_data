@@ -211,27 +211,36 @@ yellow_cab_pickups <-
     VendorID == 2 ~ "Curb Mobility, LLC", 
     VendorID == 7 ~ "Helix Pay",
   ),
-  Vendor_name = fct(Vendor_name))
+  Vendor_name = fct(Vendor_name),
+  day = lubridate::day(tpep_pickup_datetime),
+  time_of_day = lubridate::hour(tpep_pickup_datetime))
 
 tictoc::tic()
 
 pickups_aug2026 <-
   yellow_cab_pickups |>
-  group_by(VendorID, Vendor_name, PULocationID, zone, geometry) |>
-  summarize(num_pickups = n(),
-            day = lubridate::day(tpep_pickup_datetime),
-            time_of_day = lubridate::hour(tpep_pickup_datetime),
-            .groups = "drop") |>
+  group_by(PULocationID, zone, geometry) |>
+  summarize(num_pickups = n(), .groups = "drop") |>
   tm_shape() +
   tm_polygons(fill = "num_pickups",
-              fill.legend = tm_legend(title = "Number of Passenger Pickups",reverse = TRUE)) +
-  tm_facets(by = "Vendor_name")
-# tm_animate_fast(frames = "day")
+              fill.legend = tm_legend(title = "Number of Passenger Pickups",reverse = TRUE))
 
 tictoc::toc()
 
-tmap_save(pickups_aug2026, filename = "visualizations/figure_4.pdf", dpi = 600, height = 6, width = 12)
+tmap_save(pickups_aug2026, filename = "visualizations/figure_4.png", dpi = 600, height = 6, width = 12, device = ragg::agg_png)
 
+
+payments_aug2026 <-
+  yellow_cab_pickups |>
+  group_by(payment_type, zone, geometry) |>
+  filter(payment_type != 5) |> #Unknown payment type
+  summarize(payment_occurence = n(), .groups = "drop") |>
+  tm_shape() +
+  tm_polygons(fill = "payment_occurence",
+              fill.legend = tm_legend(title = "Count of Payment Occurences", reverse = TRUE)) +
+  tm_facets(by = "payment_type")
+
+tmap_save(payments_aug2026, filename = "visualizations/figure_5.png", dpi = 600, height = 6, width = 12, device = ragg::agg_png)
 
 # Old Code for sf() and patchwork() maps ----------------------------------
 
