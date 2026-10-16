@@ -1,6 +1,6 @@
 # Taxi Trips
 
-pacman::p_load(tidyverse, httr2, duckdb, arrow, sf, leaflet, tmap)
+pacman::p_load(tidyverse, httr2, sf, leaflet, tmap)
 
 # .PARQUET source link: https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
 
@@ -193,9 +193,6 @@ ggsave(filename = "visualizations/figure_3.pdf", dpi = 600, height = 6, width = 
 
 # 4. Geographic Breakdown - Location Pickup -------------------------------------------------
 
-
-# crsuggest::suggest_crs(filter(taxi_zones, borough != "EWR"))
-
 taxi_zones <-
   read_sf("data/taxi_data/taxi_zones/") |>  # taxi_zone shape data
   st_as_sf() |>
@@ -241,65 +238,4 @@ payments_aug2026 <-
   tm_facets(by = "payment_type")
 
 tmap_save(payments_aug2026, filename = "visualizations/figure_5.png", dpi = 600, height = 6, width = 12, device = ragg::agg_png)
-
-# Old Code for sf() and patchwork() maps ----------------------------------
-
-# yellow_cab_pickups |>
-#   group_by(PULocationID, zone) |>
-#   summarize(num_pickups = n(), .groups = "drop") |>
-#   ggplot() +
-#   geom_sf(aes(fill = num_pickups)) +
-#   scale_fill_viridis_c(
-#     name = "Number of Passenger Pickups",
-#     values = scales::label_comma()
-#   ) +
-#   ggthemes::theme_map()
-# 
-# brooklyn_taxi_zones_plot_pu <-
-#   taxi_zones |>
-#   filter(borough == "Brooklyn") |>
-#   ggplot() +
-#   geom_sf() +
-#   ggthemes::theme_map() +
-#   facet_wrap(~borough)
-# 
-# bronx_taxi_zones_plot_pu <-
-#   taxi_zones |>
-#   filter(borough == "Bronx") |>
-#   ggplot() +
-#   geom_sf() +
-#   ggthemes::theme_map() +
-#   facet_wrap(~borough)
-# 
-# manhattan_taxi_zones_plot_pu <-
-#   taxi_zones |>
-#   filter(borough == "Manhattan") |>
-#   ggplot() +
-#   geom_sf() +
-#   ggthemes::theme_map() +
-#   facet_wrap(~borough)
-# 
-# queens_taxi_zones_plot_pu <-
-#   taxi_zones |>
-#   filter(borough == "Queens") |>
-#   ggplot() +
-#   geom_sf() +
-#   ggthemes::theme_map() +
-#   facet_wrap(~borough)
-# 
-# staten_island_taxi_zones_plot_pu <-
-#   taxi_zones |>
-#   filter(borough == "Staten Island") |>
-#   ggplot() +
-#   geom_sf() +
-#   ggthemes::theme_map() +
-#   facet_wrap(~borough)
-# 
-# library(patchwork)
-# 
-# wrap_plots(brooklyn_taxi_zones_plot, bronx_taxi_zones_plot, manhattan_taxi_zones_plot, queens_taxi_zones_plot, staten_island_taxi_zones_plot) +
-#   plot_annotation(
-#     title = "NYC Taxi Zones"
-#   )
-
 
